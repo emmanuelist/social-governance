@@ -112,6 +112,8 @@
   (is-some (map-get? user-voting-history { voter-principal: user-address, post-id: post-id }))
 )
 
+
+
 ;; Platform statistics and metrics
 (define-read-only (get-platform-content-count)
   (var-get global-content-id-counter)
@@ -136,6 +138,8 @@
 (define-read-only (get-platform-administrator)
   (var-get contract-administrator-principal)
 )
+
+
 
 ;; Remove content from featured status (admin only)
 (define-public (remove-content-from-featured (target-post-id uint))
@@ -224,7 +228,8 @@
   )
 )
 
-; ADMINISTRATIVE FUNCTIONS
+
+;; ADMINISTRATIVE FUNCTIONS
 
 ;; Update platform fee percentage (admin only)
 (define-public (configure-platform-fee (new-fee-percentage uint))
@@ -269,6 +274,27 @@
     
     ;; Transfer administrative rights
     (var-set contract-administrator-principal new-admin-principal)
+    
+    (ok true)
+  )
+)
+
+;; CONTRACT INITIALIZATION
+
+;; Initialize platform with custom administrator
+(define-public (initialize-platform-configuration (initial-admin principal))
+  (begin
+    ;; Current admin access verification
+    (asserts! (is-eq tx-sender (var-get contract-administrator-principal)) ERR-UNAUTHORIZED-ACCESS)
+    
+    ;; Validate new administrator is not null address
+    (asserts! (not (is-eq initial-admin 'SP000000000000000000002Q6VF78)) ERR-INVALID-INPUT-PARAMETER)
+    
+    ;; Set initial administrator if different from deployer
+    (if (not (is-eq (var-get contract-administrator-principal) initial-admin))
+      (var-set contract-administrator-principal initial-admin)
+      true
+    )
     
     (ok true)
   )
