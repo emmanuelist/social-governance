@@ -47,3 +47,29 @@
     is-currently-active: bool
   }
 )
+
+;; User voting interaction tracking
+(define-map user-voting-history
+  { voter-principal: principal, post-id: uint }
+  { vote-timestamp: uint }
+)
+
+;; Comprehensive user reputation and activity metrics
+(define-map platform-user-profiles
+  { user-principal: principal }
+  {
+    current-reputation-score: uint,
+    total-content-published: uint,
+    total-votes-given: uint,
+    account-registration-block: uint
+  }
+)
+
+;; Featured and promoted content registry
+(define-map promoted-content-registry
+  { post-id: uint }
+  {
+    promotion-timestamp: uint,
+    promotion-description: (string-ascii 50)
+  }
+)
