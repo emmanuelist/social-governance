@@ -223,3 +223,53 @@
     )
   )
 )
+
+; ADMINISTRATIVE FUNCTIONS
+
+;; Update platform fee percentage (admin only)
+(define-public (configure-platform-fee (new-fee-percentage uint))
+  (begin
+    ;; Admin access verification
+    (asserts! (is-eq tx-sender (var-get contract-administrator-principal)) ERR-UNAUTHORIZED-ACCESS)
+    
+    ;; Validate fee is within reasonable bounds
+    (asserts! (<= new-fee-percentage maximum-commission-rate) ERR-INVALID-INPUT-PARAMETER)
+    
+    ;; Update platform fee
+    (var-set platform-fee-percentage new-fee-percentage)
+    
+    (ok true)
+  )
+)
+
+;; Update minimum reputation threshold for content promotion (admin only)
+(define-public (configure-promotion-reputation-threshold (new-threshold uint))
+  (begin
+    ;; Admin access verification
+    (asserts! (is-eq tx-sender (var-get contract-administrator-principal)) ERR-UNAUTHORIZED-ACCESS)
+    
+    ;; Validate threshold is reasonable
+    (asserts! (<= new-threshold maximum-reputation-threshold) ERR-INVALID-INPUT-PARAMETER)
+    
+    ;; Update reputation threshold
+    (var-set minimum-reputation-for-content-promotion new-threshold)
+    
+    (ok true)
+  )
+)
+
+;; Transfer administrative privileges (admin only)
+(define-public (transfer-platform-administration (new-admin-principal principal))
+  (begin
+    ;; Admin access verification
+    (asserts! (is-eq tx-sender (var-get contract-administrator-principal)) ERR-UNAUTHORIZED-ACCESS)
+    
+    ;; Validate new administrator is not null address
+    (asserts! (not (is-eq new-admin-principal 'SP000000000000000000002Q6VF78)) ERR-INVALID-INPUT-PARAMETER)
+    
+    ;; Transfer administrative rights
+    (var-set contract-administrator-principal new-admin-principal)
+    
+    (ok true)
+  )
+)
