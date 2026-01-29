@@ -73,3 +73,41 @@
     promotion-description: (string-ascii 50)
   }
 )
+
+;; PLATFORM STATE VARIABLES
+
+(define-data-var contract-administrator-principal principal tx-sender)
+(define-data-var global-content-id-counter uint u0)
+(define-data-var platform-fee-percentage uint default-platform-fee-percentage)
+(define-data-var minimum-reputation-for-content-promotion uint minimum-reputation-for-promotion)
+
+;; UTILITY AND VALIDATION FUNCTIONS
+
+;; Comprehensive content validation with status checking
+(define-private (validate-content-availability (post-id uint))
+  (let ((content-record (map-get? published-content-database { post-id: post-id })))
+    (if (is-some content-record)
+      (let ((content-data (unwrap-panic content-record)))
+        (if (get is-currently-active content-data)
+          (ok content-data)
+          ERR-CONTENT-NOT-FOUND
+        )
+      )
+      ERR-CONTENT-NOT-FOUND
+    )
+  )
+)
+
+
+
+;; READ-ONLY QUERY FUNCTIONS
+
+;; Retrieve complete content information by ID
+(define-read-only (fetch-content-by-id (post-id uint))
+  (map-get? published-content-database { post-id: post-id })
+)
+
+;; Check user's voting status for specific content
+(define-read-only (check-user-vote-status (user-address principal) (post-id uint))
+  (is-some (map-get? user-voting-history { voter-principal: user-address, post-id: post-id }))
+)
