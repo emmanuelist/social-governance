@@ -195,3 +195,31 @@
     )
   )
 )
+
+;; Reactivate previously deactivated content (author only)
+(define-public (set-content-active (target-post-id uint))
+  (begin
+    ;; Input validation
+    (asserts! (and (>= target-post-id u0) 
+                  (< target-post-id (var-get global-content-id-counter))) 
+              ERR-INVALID-CONTENT-REFERENCE)
+    
+    (let
+      (
+        (requesting-user tx-sender)
+        (content-data (unwrap! (fetch-content-by-id target-post-id) ERR-CONTENT-NOT-FOUND))
+      )
+      
+      ;; Verify user is content owner
+      (asserts! (is-eq requesting-user (get author-principal content-data)) ERR-UNAUTHORIZED-ACCESS)
+      
+      ;; Update content status to active
+      (map-set published-content-database
+        { post-id: target-post-id }
+        (merge content-data { is-currently-active: true })
+      )
+      
+      (ok true)
+    )
+  )
+)
